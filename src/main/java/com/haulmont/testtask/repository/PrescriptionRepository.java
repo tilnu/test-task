@@ -10,5 +10,4 @@ import java.util.List;
 public interface PrescriptionRepository extends JpaRepository<Prescription, Long> {
     @Override
     List<Prescription> findAll();
-    List<Prescription> findByDoctor();
 }

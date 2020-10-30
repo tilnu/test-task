@@ -1,5 +1,7 @@
 package com.haulmont.testtask.entity;
 
+import com.haulmont.testtask.entity.enums.Priority;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
