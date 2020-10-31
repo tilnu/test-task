@@ -1,18 +1,25 @@
 package com.haulmont.testtask.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.util.Objects;
 
 @Entity
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @NotBlank
+    @Column(nullable = false)
     private String name;
+    @NotBlank
+    @Column(nullable = false)
     private String surname;
+    @NotBlank
+    @Column(nullable = false)
     private String patronymic;
+    @NotBlank
+    @Column(nullable = false)
     private String specialisation;
 
     public Doctor() {
@@ -56,5 +63,27 @@ public class Doctor {
 
     public void setSpecialisation(String specialisation) {
         this.specialisation = specialisation;
+    }
+
+    @Override
+    public String toString() {
+        return surname + ' ' + name + ' ' + patronymic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Doctor doctor = (Doctor) o;
+        return id == doctor.id &&
+                Objects.equals(name, doctor.name) &&
+                Objects.equals(surname, doctor.surname) &&
+                Objects.equals(patronymic, doctor.patronymic) &&
+                Objects.equals(specialisation, doctor.specialisation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, surname, patronymic, specialisation);
     }
 }
