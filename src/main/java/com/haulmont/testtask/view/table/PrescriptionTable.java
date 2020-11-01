@@ -12,7 +12,6 @@ import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedHashSet;
-import java.util.stream.Collectors;
 
 @UIScope
 @SpringComponent
@@ -71,9 +70,7 @@ public class PrescriptionTable extends AbstractTable {
                 filterResult.retainAll(entityService.findPrescriptionByPriority(filterPriority.getValue()));
             }
             if (!filterDescription.isEmpty()) {
-                filterResult.retainAll(entityService.getAllPrescriptions().stream().filter(prescription ->
-                        prescription.getDescription().toLowerCase().contains(filterDescription.getValue().toLowerCase()))
-                        .collect(Collectors.toSet()));
+                filterResult.retainAll(entityService.findPrescriptionByDescription(filterDescription.getValue()));
             }
             prescriptionGrid.setItems(filterResult);
         });

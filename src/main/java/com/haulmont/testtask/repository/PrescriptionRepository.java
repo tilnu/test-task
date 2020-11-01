@@ -19,4 +19,6 @@ public interface PrescriptionRepository extends CrudRepository<Prescription, Lon
     List<Prescription> findByPatient(Patient patient);
 
     List<Prescription> findByPriority(Priority priority);
+
+    List<Prescription> findByDescriptionIgnoreCaseContaining(String description);
 }

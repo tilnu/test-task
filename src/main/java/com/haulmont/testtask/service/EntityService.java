@@ -68,4 +68,8 @@ public class EntityService {
     public List<Prescription> findPrescriptionByPriority(Priority priority) {
         return prescriptionRepository.findByPriority(priority);
     }
+
+    public List<Prescription> findPrescriptionByDescription(String description) {
+        return prescriptionRepository.findByDescriptionIgnoreCaseContaining(description);
+    }
 }
