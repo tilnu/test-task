@@ -12,6 +12,7 @@ import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 @UIScope
 @SpringComponent
@@ -64,13 +65,20 @@ public class PrescriptionTable extends AbstractTable {
         confirmFilter.addClickListener(clickEvent -> {
             LinkedHashSet<Prescription> filterResult = new LinkedHashSet<>(entityService.getAllPrescriptions());
             if (!filterPatient.isEmpty()) {
-                filterResult.retainAll(entityService.findPrescriptionByPatient(filterPatient.getValue()));
+                filterResult = filterResult.stream().filter(prescription ->
+                        prescription.getPatient().equals(filterPatient.getValue()))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
             }
             if (!filterPriority.isEmpty()) {
-                filterResult.retainAll(entityService.findPrescriptionByPriority(filterPriority.getValue()));
+                filterResult = filterResult.stream().filter(prescription ->
+                        prescription.getPriority().equals(filterPriority.getValue()))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
             }
             if (!filterDescription.isEmpty()) {
-                filterResult.retainAll(entityService.findPrescriptionByDescription(filterDescription.getValue()));
+                filterResult = filterResult.stream().filter(prescription ->
+                        prescription.getDescription().toLowerCase()
+                                .contains(filterDescription.getValue().toLowerCase()))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
             }
             prescriptionGrid.setItems(filterResult);
         });

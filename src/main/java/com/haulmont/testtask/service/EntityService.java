@@ -3,7 +3,6 @@ package com.haulmont.testtask.service;
 import com.haulmont.testtask.entity.Doctor;
 import com.haulmont.testtask.entity.Patient;
 import com.haulmont.testtask.entity.Prescription;
-import com.haulmont.testtask.entity.enums.Priority;
 import com.haulmont.testtask.repository.DoctorRepository;
 import com.haulmont.testtask.repository.PatientRepository;
 import com.haulmont.testtask.repository.PrescriptionRepository;
@@ -59,17 +58,5 @@ public class EntityService {
 
     public List<Prescription> findPrescriptionByDoctor(Doctor doctor) {
         return prescriptionRepository.findByDoctor(doctor);
-    }
-
-    public List<Prescription> findPrescriptionByPatient(Patient patient) {
-        return prescriptionRepository.findByPatient(patient);
-    }
-
-    public List<Prescription> findPrescriptionByPriority(Priority priority) {
-        return prescriptionRepository.findByPriority(priority);
-    }
-
-    public List<Prescription> findPrescriptionByDescription(String description) {
-        return prescriptionRepository.findByDescriptionIgnoreCaseContaining(description);
     }
 }
