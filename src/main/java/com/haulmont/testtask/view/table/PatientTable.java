@@ -10,15 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
-public class PatientTable extends VerticalLayout {
-
-    private PatientWindow patientWindow;
-    private EntityService entityService;
-    private Grid<Patient> patientGrid = new Grid<>();
-    private HorizontalLayout toolbar = new HorizontalLayout();
-    private Button addButton = new Button("Добавить");
-    private Button editButton = new Button("Изменить");
-    private Button deleteButton = new Button("Удалить");
+public class PatientTable extends AbstractTable {
+    private final PatientWindow patientWindow;
+    private final EntityService entityService;
+    private final Grid<Patient> patientGrid = new Grid<>();
 
     @Autowired
     public PatientTable(EntityService entityService, PatientWindow patientWindow) {
@@ -47,9 +42,6 @@ public class PatientTable extends VerticalLayout {
                 Notification.show("Для данного пациента есть рецепты");
             }
         });
-        editButton.setEnabled(false);
-        deleteButton.setEnabled(false);
-        toolbar.addComponents(addButton, editButton, deleteButton);
         addComponent(toolbar);
     }
     private void buildGrid() {
@@ -71,7 +63,7 @@ public class PatientTable extends VerticalLayout {
             }
         });
     }
-    void update() {
+    private void update() {
         patientGrid.setItems(entityService.getAllPatients());
     }
 }

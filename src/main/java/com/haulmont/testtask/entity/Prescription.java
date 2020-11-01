@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
+@Table(name = "t_prescription")
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,17 +18,17 @@ public class Prescription {
     @Column(nullable = false)
     private String description;
     @NonNull
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Doctor doctor;
     @NonNull
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Patient patient;
     @NonNull
     @Column(nullable = false)
     private LocalDate issueDate;
     @NonNull
     @Column(nullable = false)
-    private LocalDate validity;
+    private LocalDate validDate;
     @NonNull
     @Column(nullable = false)
     private Priority priority;
@@ -75,12 +76,12 @@ public class Prescription {
         this.issueDate = issueDate;
     }
 
-    public LocalDate getValidity() {
-        return validity;
+    public LocalDate getValidDate() {
+        return validDate;
     }
 
-    public void setValidity(LocalDate validity) {
-        this.validity = validity;
+    public void setValidDate(LocalDate validity) {
+        this.validDate = validity;
     }
 
     public Priority getPriority() {
@@ -101,12 +102,12 @@ public class Prescription {
                 Objects.equals(doctor, that.doctor) &&
                 Objects.equals(patient, that.patient) &&
                 Objects.equals(issueDate, that.issueDate) &&
-                Objects.equals(validity, that.validity) &&
+                Objects.equals(validDate, that.validDate) &&
                 priority == that.priority;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, description, doctor, patient, issueDate, validity, priority);
+        return Objects.hash(id, description, doctor, patient, issueDate, validDate, priority);
     }
 }

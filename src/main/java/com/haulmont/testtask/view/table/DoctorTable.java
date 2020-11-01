@@ -11,16 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
-public class DoctorTable extends VerticalLayout {
-
-    private DoctorWindow doctorWindow;
-    private EntityService entityService;
-    private Grid<Doctor> doctorGrid = new Grid<>();
-    private HorizontalLayout toolbar = new HorizontalLayout();
-    private Button addButton = new Button("Добавить");
-    private Button editButton = new Button("Изменить");
-    private Button deleteButton = new Button("Удалить");
-    private Button statisticsButton = new Button("Показать статистику");
+public class DoctorTable extends AbstractTable {
+    private final DoctorWindow doctorWindow;
+    private final EntityService entityService;
+    private final Grid<Doctor> doctorGrid = new Grid<>();
+    private final Button statisticsButton = new Button("Показать статистику");
 
     @Autowired
     public DoctorTable(EntityService entityService, DoctorWindow doctorWindow) {
@@ -50,10 +45,9 @@ public class DoctorTable extends VerticalLayout {
                 Notification.show("Для данного врача есть рецепты");
             }
         });
-        statisticsButton.addClickListener(clickEvent -> UI.getCurrent().addWindow(new DoctorStatisticWindow(entityService)));
-        editButton.setEnabled(false);
-        deleteButton.setEnabled(false);
-        toolbar.addComponents(addButton, editButton, deleteButton, statisticsButton);
+        statisticsButton.addClickListener(clickEvent ->
+                UI.getCurrent().addWindow(new DoctorStatisticWindow(entityService)));
+        toolbar.addComponent(statisticsButton);
         addComponent(toolbar);
     }
     private void buildGrid() {

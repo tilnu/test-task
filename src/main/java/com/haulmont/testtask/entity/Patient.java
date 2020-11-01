@@ -6,6 +6,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @Entity
+@Table(name = "t_patient")
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

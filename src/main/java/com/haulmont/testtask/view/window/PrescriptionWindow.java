@@ -11,26 +11,17 @@ import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.ConstraintViolationException;
-
 @SpringComponent
-public class PrescriptionWindow extends Window {
-    private EntityService entityService;
-    private Prescription prescription = new Prescription();
-    private Binder<Prescription> prescriptionBinder = new Binder<>();
-    private VerticalLayout leftPart = new VerticalLayout();
-    private VerticalLayout rightPart = new VerticalLayout();
-    private VerticalLayout mainLayout = new VerticalLayout();
-    private HorizontalLayout content = new HorizontalLayout();
-    private HorizontalLayout buttons = new HorizontalLayout();
-    private TextArea description = new TextArea("Описание");
-    private ComboBox<Priority> priority = new ComboBox<>("Приоритет");
-    private ComboBox<Doctor> doctor = new ComboBox<>("Врач");
-    private ComboBox<Patient> patient = new ComboBox<>("Пациент");
-    private DateField issue = new DateField("Дата создания");
-    private DateField validity = new DateField("Срок действия");
-    private Button confirm = new Button("ОК");
-    private Button cancel = new Button("Отменить");
+public class PrescriptionWindow extends AbstractWindow {
+    private final EntityService entityService;
+    private final Binder<Prescription> binder = new Binder<>();
+    private final TextArea description = new TextArea("Описание");
+    private final ComboBox<Priority> priority = new ComboBox<>("Приоритет");
+    private final ComboBox<Doctor> doctor = new ComboBox<>("Врач");
+    private final ComboBox<Patient> patient = new ComboBox<>("Пациент");
+    private final DateField issueDate = new DateField("Дата создания");
+    private final DateField validDate = new DateField("Срок действия");
+    private Prescription prescription;
 
     @Autowired
     public PrescriptionWindow(EntityService entityService) {
@@ -39,18 +30,21 @@ public class PrescriptionWindow extends Window {
         priority.setRequiredIndicatorVisible(true);
         doctor.setRequiredIndicatorVisible(true);
         patient.setRequiredIndicatorVisible(true);
-        issue.setRequiredIndicatorVisible(true);
-        validity.setRequiredIndicatorVisible(true);
+        issueDate.setRequiredIndicatorVisible(true);
+        validDate.setRequiredIndicatorVisible(true);
 
         priority.setItems(Priority.NORMAL, Priority.CITO, Priority.STATIM);
 
-        leftPart.addComponents(issue, doctor, patient, priority);
-        rightPart.addComponents(validity, description);
+        VerticalLayout leftPart = new VerticalLayout();
+        leftPart.addComponents(issueDate, doctor, patient, priority);
+
+        VerticalLayout rightPart = new VerticalLayout();
+        rightPart.addComponents(validDate, description);
+
+        HorizontalLayout content = new HorizontalLayout();
         content.addComponents(leftPart, rightPart);
 
-        cancel.addClickListener(clickEvent -> close());
-        buttons.addComponents(confirm, cancel);
-
+        VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.addComponents(content, buttons);
         mainLayout.setComponentAlignment(buttons, Alignment.MIDDLE_CENTER);
 
@@ -58,36 +52,43 @@ public class PrescriptionWindow extends Window {
         setResizable(false);
         setModal(true);
         addBinders();
+
         confirm.addClickListener(clickEvent -> {
-            if (validity.getValue().isAfter(issue.getValue())) {
-                try {
-                    prescriptionBinder.writeBean(prescription);
+            try {
+                binder.writeBean(prescription);
+                if (validDate.getValue().isAfter(issueDate.getValue())) {
                     try {
                         entityService.savePrescription(prescription);
                         close();
-                    } catch (ConstraintViolationException e) {
+                    } catch (Exception e) {
                         Notification.show("Некорректные данные");
                     }
-                } catch (ValidationException e) {
-                    Notification.show("Введите корректные данные");
                 }
-            } else {
-                Notification.show("Срок действия не может быть раньше даты выдачи");
+                else {
+                    Notification.show("Срок действия не может быть раньше даты выдачи");
+                }
+            } catch (ValidationException e) {
+                Notification.show("Введите корректные данные");
             }
         });
     }
     private void addBinders() {
-        prescriptionBinder.forField(description).asRequired("Введите описание").bind(Prescription::getDescription, Prescription::setDescription);
-        prescriptionBinder.forField(doctor).asRequired("Выберите врача").bind(Prescription::getDoctor, Prescription::setDoctor);
-        prescriptionBinder.forField(patient).asRequired("Выберите пациента").bind(Prescription::getPatient, Prescription::setPatient);
-        prescriptionBinder.forField(priority).asRequired("Выберите приоритет").bind(Prescription::getPriority, Prescription::setPriority);
-        prescriptionBinder.forField(issue).asRequired("Введите дату выдачи").bind(Prescription::getIssueDate, Prescription::setIssueDate);
-        prescriptionBinder.forField(validity).asRequired("Введите срок действия").bind(Prescription::getValidity, Prescription::setValidity);
+        binder.forField(description).asRequired("Введите описание")
+                .bind(Prescription::getDescription, Prescription::setDescription);
+        binder.forField(doctor).asRequired("Выберите врача")
+                .bind(Prescription::getDoctor, Prescription::setDoctor);
+        binder.forField(patient).asRequired("Выберите пациента")
+                .bind(Prescription::getPatient, Prescription::setPatient);
+        binder.forField(priority).asRequired("Выберите приоритет")
+                .bind(Prescription::getPriority, Prescription::setPriority);
+        binder.forField(issueDate).asRequired("Введите дату выдачи")
+                .bind(Prescription::getIssueDate, Prescription::setIssueDate);
+        binder.forField(validDate).asRequired("Введите срок действия")
+                .bind(Prescription::getValidDate, Prescription::setValidDate);
     }
-
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
-        prescriptionBinder.readBean(prescription);
+        binder.readBean(prescription);
         doctor.setItems(entityService.getAllDoctors());
         patient.setItems(entityService.getAllPatients());
     }

@@ -8,45 +8,46 @@ import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.ConstraintViolationException;
-
 @SpringComponent
 public class DoctorWindow extends AbstractPersonWindow {
-    private TextField specialisation = new TextField("Специализация");
+    private final TextField specialisation = new TextField("Специализация");
+    private final Binder<Doctor> binder = new Binder();
     private Doctor doctor;
-    private Binder<Doctor> doctorBinder = new Binder();
 
     @Autowired
     public DoctorWindow(EntityService entityService) {
-        super();
         specialisation.setRequiredIndicatorVisible(true);
         formLayout.addComponent(specialisation);
         addBinder();
         confirm.addClickListener(clickEvent -> {
+            try {
+                binder.writeBean(doctor);
                 try {
-                    doctorBinder.writeBean(doctor);
-                    try {
-                        entityService.saveDoctor(doctor);
-                        close();
-                    }
-                    catch (ConstraintViolationException e) {
-                        Notification.show("Некорректные данные");
-                    }
+                    entityService.saveDoctor(doctor);
+                    close();
                 }
-                catch (ValidationException e) {
-                    Notification.show("Введите корректные данные");
+                catch (Exception e) {
+                    Notification.show("Некорректные данные");
                 }
-                });
+            }
+            catch (ValidationException e) {
+                Notification.show("Введите корректные данные");
+            }
+        });
     }
     private void addBinder() {
-        doctorBinder.forField(name).asRequired("Введите имя").bind(Doctor::getName, Doctor::setName);
-        doctorBinder.forField(surname).asRequired("Введите фамилию").bind(Doctor::getSurname, Doctor::setSurname);
-        doctorBinder.forField(patronymic).asRequired("Введите отчество").bind(Doctor::getPatronymic, Doctor::setPatronymic);
-        doctorBinder.forField(specialisation).asRequired("Введите специализацию").bind(Doctor::getSpecialisation, Doctor::setSpecialisation);
+        binder.forField(name).asRequired("Введите имя")
+                .bind(Doctor::getName, Doctor::setName);
+        binder.forField(surname).asRequired("Введите фамилию")
+                .bind(Doctor::getSurname, Doctor::setSurname);
+        binder.forField(patronymic).asRequired("Введите отчество")
+                .bind(Doctor::getPatronymic, Doctor::setPatronymic);
+        binder.forField(specialisation).asRequired("Введите специализацию")
+                .bind(Doctor::getSpecialisation, Doctor::setSpecialisation);
     }
 
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
-        doctorBinder.readBean(doctor);
+        binder.readBean(doctor);
     }
 }

@@ -11,25 +11,20 @@ import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 
 @UIScope
 @SpringComponent
-public class PrescriptionTable extends VerticalLayout {
-
-    private EntityService entityService;
-    private PrescriptionWindow prescriptionWindow;
-    private Grid<Prescription> prescriptionGrid = new Grid<>();
-    private HorizontalLayout toolbar = new HorizontalLayout();
-    private HorizontalLayout filter = new HorizontalLayout();
-    private ComboBox<Patient> filterPatient = new ComboBox<>("Пациент");
-    private ComboBox<Priority> priority = new ComboBox<>("Приоритет");
-    private TextField description = new TextField("Описание");
-    private Button confirmFilter = new Button("Применить");
-    private Button addButton = new Button("Добавить");
-    private Button editButton = new Button("Изменить");
-    private Button deleteButton = new Button("Удалить");
+public class PrescriptionTable extends AbstractTable {
+    private final EntityService entityService;
+    private final PrescriptionWindow prescriptionWindow;
+    private final Grid<Prescription> prescriptionGrid = new Grid<>();
+    private final HorizontalLayout filterPanel = new HorizontalLayout();
+    private final ComboBox<Patient> filterPatient = new ComboBox<>("Пациент");
+    private final ComboBox<Priority> filterPriority = new ComboBox<>("Приоритет");
+    private final TextField filterDescription = new TextField("Описание");
+    private final Button confirmFilter = new Button("Применить");
 
     @Autowired
     public PrescriptionTable(EntityService entityService, PrescriptionWindow prescriptionWindow) {
@@ -56,32 +51,28 @@ public class PrescriptionTable extends VerticalLayout {
             entityService.deletePrescription(prescriptionGrid.asSingleSelect().getValue());
             update();
         });
-
-        editButton.setEnabled(false);
-        deleteButton.setEnabled(false);
-        toolbar.addComponents(addButton, editButton, deleteButton);
         addComponent(toolbar);
     }
     private void buildFilter() {
         filterPatient.addFocusListener(focusEvent -> filterPatient.setItems(entityService.getAllPatients()));
-        priority.setItems(Priority.NORMAL, Priority.CITO, Priority.STATIM);
-        filter.addComponents(filterPatient, priority, description, confirmFilter);
-        filter.setComponentAlignment(confirmFilter, Alignment.BOTTOM_CENTER);
-        addComponent(filter);
+        filterPriority.setItems(Priority.NORMAL, Priority.CITO, Priority.STATIM);
+        filterPanel.addComponents(filterPatient, filterPriority, filterDescription, confirmFilter);
+        filterPanel.setComponentAlignment(confirmFilter, Alignment.BOTTOM_CENTER);
+        addComponent(filterPanel);
 
         confirmFilter.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
         confirmFilter.addClickListener(clickEvent -> {
-            HashSet<Prescription> filterResult = new HashSet<>(entityService.getAllPrescriptions());
+            LinkedHashSet<Prescription> filterResult = new LinkedHashSet<>(entityService.getAllPrescriptions());
             if (!filterPatient.isEmpty()) {
                 filterResult.retainAll(entityService.findPrescriptionByPatient(filterPatient.getValue()));
             }
-            if (!priority.isEmpty()) {
-                filterResult.retainAll(entityService.findPrescriptionByPriority(priority.getValue()));
+            if (!filterPriority.isEmpty()) {
+                filterResult.retainAll(entityService.findPrescriptionByPriority(filterPriority.getValue()));
             }
-            if (!description.isEmpty()) {
+            if (!filterDescription.isEmpty()) {
                 filterResult.retainAll(entityService.getAllPrescriptions().stream().filter(prescription ->
-                        prescription.getDescription().toLowerCase().contains(description.getValue().toLowerCase()))
+                        prescription.getDescription().toLowerCase().contains(filterDescription.getValue().toLowerCase()))
                         .collect(Collectors.toSet()));
             }
             prescriptionGrid.setItems(filterResult);
@@ -92,7 +83,7 @@ public class PrescriptionTable extends VerticalLayout {
         prescriptionGrid.addColumn(Prescription::getDoctor).setCaption("Врач");
         prescriptionGrid.addColumn(Prescription::getPatient).setCaption("Пациент");
         prescriptionGrid.addColumn(Prescription::getIssueDate).setCaption("Дата создания");
-        prescriptionGrid.addColumn(Prescription::getValidity).setCaption("Срок действия");
+        prescriptionGrid.addColumn(Prescription::getValidDate).setCaption("Срок действия");
         prescriptionGrid.addColumn(Prescription::getPriority).setCaption("Приоритет");
         prescriptionGrid.setSizeFull();
         addComponent(prescriptionGrid);
@@ -108,7 +99,7 @@ public class PrescriptionTable extends VerticalLayout {
             }
         });
     }
-    public void update() {
+    private void update() {
         prescriptionGrid.setItems(entityService.getAllPrescriptions());
     }
 }

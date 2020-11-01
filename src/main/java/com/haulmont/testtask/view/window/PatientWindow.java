@@ -8,28 +8,25 @@ import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.ui.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.ConstraintViolationException;
-
 @SpringComponent
 public class PatientWindow extends AbstractPersonWindow {
-    private TextField phone = new TextField("Номер телефона");
+    private final TextField phone = new TextField("Номер телефона");
+    private final Binder<Patient> binder = new Binder();
     private Patient patient;
-    private Binder<Patient> patientBinder = new Binder();
 
     @Autowired
     public PatientWindow(EntityService entityService) {
-        super();
         phone.setRequiredIndicatorVisible(true);
         formLayout.addComponents(phone);
         addBinder();
         confirm.addClickListener(clickEvent -> {
             try {
-                patientBinder.writeBean(patient);
+                binder.writeBean(patient);
                 try {
                     entityService.savePatient(patient);
                     close();
                 }
-                catch (ConstraintViolationException e) {
+                catch (Exception e) {
                     Notification.show("Некорректные данные");
                 }
             }
@@ -39,14 +36,17 @@ public class PatientWindow extends AbstractPersonWindow {
         });
     }
     private void addBinder() {
-        patientBinder.forField(name).asRequired("Введите имя").bind(Patient::getName, Patient::setName);
-        patientBinder.forField(surname).asRequired("Введите фамилию").bind(Patient::getSurname, Patient::setSurname);
-        patientBinder.forField(patronymic).asRequired("Введите отчество").bind(Patient::getPatronymic, Patient::setPatronymic);
-        patientBinder.forField(phone).asRequired("Введите телефон").bind(Patient::getPhone, Patient::setPhone);
+        binder.forField(name).asRequired("Введите имя")
+                .bind(Patient::getName, Patient::setName);
+        binder.forField(surname).asRequired("Введите фамилию")
+                .bind(Patient::getSurname, Patient::setSurname);
+        binder.forField(patronymic).asRequired("Введите отчество")
+                .bind(Patient::getPatronymic, Patient::setPatronymic);
+        binder.forField(phone).asRequired("Введите телефон")
+                .bind(Patient::getPhone, Patient::setPhone);
     }
-
     public void setPatient(Patient patient) {
         this.patient = patient;
-        patientBinder.readBean(patient);
+        binder.readBean(patient);
     }
 }
